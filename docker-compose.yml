@@ -19,5 +19,15 @@ services:
       - mongo-db
     volumes:
       - .:/home/app
+  task-back:
+    build:
+      context: ./backend/Task/
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    links:
+      - mongo-db
+    volumes:
+      - .:/home/app
 volumes:
   mongo-data:
