@@ -2,8 +2,22 @@ version: "3.9"
 services:
   mongo-db:
     image: mongo
-  environment:
-      - MONGO_INITDB_ROOT_USERNAME=nico
-      - MONGO_INITDB_ROOT_PASSWORD=password
-  volumes:
-    - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+    environment:
+        - MONGO_INITDB_ROOT_USERNAME=gianca
+        - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - mongo-data:/data/db
+  user-back:
+    build:
+      context: ./backend/Users/
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    links:
+      - mongo-db
+    volumes:
+      - .:/home/app
+volumes:
+  mongo-data:
