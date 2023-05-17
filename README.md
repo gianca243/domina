@@ -20,3 +20,5 @@ seguido a esto debera ir a la carpeta frontend/app desde otra terminal y ejecuta
 ### npm start
 
 lo que hara que la aplicación se inicie en el localhost:3000 y podra ver los resultados de la implementación
+
+cualquier inquietud comunicarse con gianca243@gmail.com
