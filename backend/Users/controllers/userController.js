@@ -33,6 +33,12 @@ exports.checkUser = async (req, res) => {
   }
   if (!coincidence) {
     authUser.login = false
+    res.send(authUser)
+    return;
   }
+
+  authUser["email"] = coincidence.email
+  authUser["userName"] = coincidence.userName
+  authUser["_id"] = coincidence._id
   res.send(authUser)
 }
