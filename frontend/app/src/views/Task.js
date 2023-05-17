@@ -1,29 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import { 
   Card, CardHeader, CardBody,
   Row, Col, Label, Input, Button,
   Table,
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
-const mocklist = [
-  {
-    name:"o",
-    duration: "3",
-    userId: "234"
-  },
-  {
-    name:"o",
-    duration: "3",
-    userId: "234"
-  },
-  {
-    name:"o",
-    duration: "3",
-    userId: "234"
-  }
-]
+import { useSelector } from "react-redux"
+import { useDispatch } from 'react-redux'
+import { addTask } from '../redux/taskSlice'
 
 const LoginForm = () => {
+  const user = useSelector((state)=> state.user)
+  const dispatch = useDispatch()
   return (
     <>
       <Formik
@@ -32,7 +20,41 @@ const LoginForm = () => {
         name: '',
       }}
       onSubmit={async (values) => {
-        console.log(values);
+        let data = await fetch(
+          "http://localhost:3001/task/create",
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json', // Adjust the content type as per your API's requirements
+            },
+            body:JSON.stringify({
+              "duration": values.duration,
+              "name": values.name,
+              "userId": user._id
+            })
+          }
+        )
+        data = await data.json()
+        if (data?._id) {
+          const fetcData = async () => {
+            try {
+              const response = await fetch(
+                `http://localhost:3001/task/get?userId=${user._id}`
+              )
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+              const responseData = await response.json();
+              console.log(responseData)
+              // setResult(responseData);
+              dispatch(addTask(responseData))
+            } catch (error) {
+              console.error('Error fetching data:', error);
+            }
+          }
+          fetcData()
+        }
+        console.log(data)
       }}
     >
       <Form>
@@ -84,9 +106,34 @@ const CardForm = () => {
 }
 
 const TaskBodyList = ({data}) => {
+  const task = useSelector((state)=> state.task)
+  const dispatch = useDispatch()
+  const deleteRequest = async (id)=> {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/task/delete?_id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+
+      let data = await response.json()
+      let nTask = task.taskList
+      console.log(nTask)
+      const result = nTask.filter(item => item._id !== id)
+      dispatch(addTask(result))
+
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
+  }
   const list = data.map((item, index) => {
     return (
-      <tr>
+      <tr key={index}>
         <th scope="row">
           {index+1}
         </th>
@@ -96,6 +143,11 @@ const TaskBodyList = ({data}) => {
         <td>
           {item.duration}
         </td>
+        <td>
+          <Button onClick={deleteRequest.bind(null, item._id)} color="danger">
+            delete
+          </Button>
+        </td>
       </tr>
     )
   })
@@ -103,6 +155,29 @@ const TaskBodyList = ({data}) => {
 }
 
 const TaskList = () => {
+  const task = useSelector((state)=> state.task)
+  const user = useSelector((state)=> state.user)
+  const dispatch = useDispatch()
+  // const [result,setResult] = useState([])
+  useEffect(()=>{
+    const fetcData = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:3001/task/get?userId=${user._id}`
+        )
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const responseData = await response.json();
+        console.log(responseData)
+        // setResult(responseData);
+        dispatch(addTask(responseData))
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+    fetcData()
+  }, [])
   return (
     <> 
       <Table bordered>
@@ -117,11 +192,14 @@ const TaskList = () => {
             <th>
               Duracion de la tarea
             </th>
+            <th>
+              Acciones
+            </th>
           </tr>
         </thead>
         <tbody>
           <TaskBodyList
-            data={mocklist}
+            data={task.taskList}
           />
         </tbody>        
       </Table>

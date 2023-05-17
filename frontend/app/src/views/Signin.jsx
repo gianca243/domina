@@ -4,8 +4,9 @@ import {
   Row, Col, Label, Input, Button
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
-
+import { useNavigate  } from 'react-router-dom';
 const LoginForm = () => {
+  const navigate  = useNavigate ();
   return (
     <>
       <Formik
@@ -15,7 +16,24 @@ const LoginForm = () => {
         email: '',
       }}
       onSubmit={async (values) => {
-        console.log(values);
+        let data = await fetch(
+          "http://localhost:3002/user/create",
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json', // Adjust the content type as per your API's requirements
+            },
+            body:JSON.stringify({
+              "userName": values.nickname,
+              "email": values.email,
+              "password": values.password
+            })
+          }
+        )
+        data = await data.json()
+        if (data?._id) {
+          navigate('/')
+        }
       }}
     >
       <Form>

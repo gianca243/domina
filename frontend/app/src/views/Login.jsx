@@ -1,30 +1,48 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { 
   Card, CardHeader, CardBody,
   Row, Col, Label, Input, Button
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
-
+import { useDispatch } from 'react-redux'
+import { addUser } from "../redux/userSlice";
+import { useNavigate  } from 'react-router-dom';
 const LoginForm = () => {
+  const navigate  = useNavigate ();
+  const dispatch = useDispatch();
   return (
     <>
       <Formik
       initialValues={{
         password: '',
-        email: '',
+        nickName: '',
       }}
       onSubmit={async (values) => {
         console.log(values);
+        const response = await fetch(
+          `http://localhost:3002/user/singin?userName=${values.nickName}&password=${values.password}`
+        )
+        let data = await response.json()
+        data = {
+          nickName: data.userName,
+          email: data.email,
+          auth: data.login,
+          _id: data._id
+        }
+        dispatch(addUser(data))
+        if (data.auth){
+          navigate('/task')
+        }
       }}
     >
       <Form>
         <Label className="my-2" htmlFor="email">
-          Email
+          NickName
         </Label>
         <Field
-          name="email"
-          placeholder="email"
-          type="email"
+          name="nickName"
+          placeholder="nickName"
+          type="text"
           as={Input}
         />
         <Label className="my-2" htmlFor="password">
